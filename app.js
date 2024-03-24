@@ -40,7 +40,7 @@ const path = require('path');
 /** ./Path */
 
 /** 3-  EJS-MATE */
-//const ejsMate = require('ejs-mate');
+const ejsMate = require('ejs-mate');
 /** ./EJS-MATE */
 
 /** 4-  Mongoose */
