@@ -149,6 +149,11 @@ passport.deserializeUser(function (obj, done) {
 /** ./APP GLOBALS */
 
 /** 13- API Routes */
+const {category, product} = require("./routes/routes");
+
+/** 1-  */ app.use('/category', category);
+/** 2-  */ app.use('/product', product);
+
 /** Main Route and Redirection to Home Route */
 app.get('/', (req, res) => {
     res.send("Hello OGME");
