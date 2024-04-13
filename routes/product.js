@@ -15,7 +15,7 @@ router.route("/")
 
 router.route("/:id")
     .get()
-    .post()
+    .post(product.update)
     .put(product.publish)
     .patch(product.trash)
     .delete(product.delete);

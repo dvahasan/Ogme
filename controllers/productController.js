@@ -7,7 +7,12 @@ const axios = require('axios');
 /** ./Required Libraries */
 
 /** Required Functions */
-const {_all, _add, _publish, _trash, _delete} = require('../lib/functions');
+const {_all,
+    _add,
+    _update,
+    _publish,
+    _trash,
+    _delete} = require('../lib/functions');
 /** ./Required Functions */
 
 /** Required Models */
@@ -18,12 +23,14 @@ const Product = require('../models/product');
 /** View All Products */
 module.exports.all = async (req, res) => {
     const filter = req.query;
-    const isFilter = filter._f;
+    const isFilter = filter._f, skip = filter._s, limit = filter._l;
     delete filter._f;
+    delete filter._s;
+    delete filter._l;
 
     const response = isFilter ?
-        await _all(Product, filter) :
-        await _all(Product);
+        await _all(Product, filter, {skip, limit}) :
+        await _all(Product,null, {skip, limit});
     return res.send(response);
 }
 /** ./View All Products */
@@ -36,6 +43,15 @@ module.exports.add = async (req, res) => {
     return res.send(response);
 }
 /** ./Add new Product */
+
+/** Update Document */
+module.exports.update = async (req, res) => {
+    //return res.send(req.body);
+    const body = req.body, {id} = req.params;
+    const response = await _update(Product, id, body);
+    return res.send(response);
+}
+/** ./Update Document */
 
 /** Publish Or Hide Product */
 module.exports.publish = async (req, res) => {
