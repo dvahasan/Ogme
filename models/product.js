@@ -33,12 +33,10 @@ const ProductSchema = new Schema({
     },
     brief: { // A short about the product story, to fill in product cards
         type: String,
-        required: true,
         trim: true,
     },
     story: { // Full product story
         type: String,
-        required: true,
         trim: true,
     },
     featureImage: { // Link for Feature Image
