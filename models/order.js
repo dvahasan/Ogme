@@ -6,28 +6,21 @@
 
 const mongoose = require('mongoose');
 const {Schema} = mongoose;
-
-/** Passport Plugin to create User Hashed Password */
-const passportLocalMongoose = require('passport-local-mongoose');
-/** ./Passport Plugin to create User Hashed Password */
-
-const UserSchema = new Schema({
-    fullName: {
-        type: String,
-        trim: true,
-        default: null,
+const OrderSchema = new Schema({
+    user: { // User attached to order
+        type: Schema.Types.ObjectId,
+        required: true,
     },
-    email: {
+    product: { // product name
         type: String,
-        default: null,
-        trim: true,
-        unique: true
+        required: true,
     },
-    mobile: {
+    quantity: {
         type: Number,
-        trim: true,
-/*        unique: true,
-        default: null,*/
+    },
+    state:{ // Pending, Confirmed, Rejected OR Completed
+        type: String,
+        default: 'Pending',
     },
     created_at: { // Date in which the document is created
         type: Date,
@@ -41,8 +34,8 @@ const UserSchema = new Schema({
         type: Boolean,
         default: true
     }
+
 });
 
-UserSchema.plugin(passportLocalMongoose);
-module.exports = mongoose.model('User', UserSchema);
 
+module.exports = mongoose.model('Order', OrderSchema);

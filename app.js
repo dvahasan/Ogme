@@ -81,7 +81,9 @@ if (process.env.NODE_ENV !== "production")
 
 
 /** 3-  Models
+ *      1- User.
  * */
+/** 1-  */ const User = require("./models/user");
 /** ./Models */
 
 
@@ -116,9 +118,9 @@ app.use(flash());
 /** ./Flash for feedback messages */
 
 /** 8-  Template Engine */
-//app.engine('ejs', ejsMate);
-//app.set('view engine', 'ejs');
-//app.set('views', path.join(__dirname, 'views'));
+app.engine('ejs', ejsMate);
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views'));
 /** ./Template Engine */
 
 /** 9-  URL Encoding */
@@ -134,7 +136,7 @@ app.use('/assets', express.static('public'));
 /** 11- Passport JS For Authentication And Authorization */
 app.use(passport.initialize());
 app.use(passport.session());
-//passport.use('user', new LocalStrategy(User.authenticate()));
+passport.use('user', new LocalStrategy(User.authenticate()));
 
 passport.serializeUser(function (user, done) {
     return done(null, user);
@@ -149,10 +151,12 @@ passport.deserializeUser(function (obj, done) {
 /** ./APP GLOBALS */
 
 /** 13- API Routes */
-const {category, product} = require("./routes/routes");
+const {category, product, file, user} = require("./routes/routes");
 
 /** 1-  */ app.use('/category', category);
 /** 2-  */ app.use('/product', product);
+/** 3-  */ app.use('/file', file);
+/** 4-  */ app.use('/user', user);
 
 /** Main Route and Redirection to Home Route */
 app.get('/', (req, res) => {
