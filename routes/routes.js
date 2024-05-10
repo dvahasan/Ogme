@@ -15,3 +15,12 @@ module.exports.file = require("./file");
 module.exports.user = require("./user");
 /** ./File Routes */
 
+/** 5- Order Routes */
+module.exports.order = require("./order");
+/** ./File Routes */
+
+/** 6- Cart Routes */
+module.exports.cart = require("./cart");
+/** ./File Routes */
+
+

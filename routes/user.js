@@ -9,14 +9,21 @@ const router = express.Router();
 const user = require('../controllers/userController');
 /** ./Required Controller */
 
+/** Required Middleware */
+const {userAuth} = require('../lib/middleware');
+/** ./Required Middleware */
+
 router.route("/")
     .get(user.all)  // View all Products
     .post(user.add); // Add new Product
 
 router.get('/new', user.new);
 router.get('/login', user.sign);
-router.get('/logout', user.logout);
 router.post('/login', user.login);
+router.get('/logout', user.logout);
+
+router.route('/profile')
+    .get(userAuth, user.userProfile);
 /*router.route("/:id")
     .get()
     .post(user.update)

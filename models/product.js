@@ -42,9 +42,9 @@ const ProductSchema = new Schema({
     featureImage: { // Link for Feature Image
         type: String,
     },
-    reviews: {
+/*    reviews: {
         type: Array,
-    },
+    },*/
     created_at: { // Date in which the document is created
         type: Date,
         default: Date.now
