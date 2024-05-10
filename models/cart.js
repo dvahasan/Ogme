@@ -11,14 +11,32 @@ const CartSchema = new Schema({
         type: Schema.Types.ObjectId,
         required: true,
     },
-    product: { // Product attached to cart
+    product_name:{
+        type: String,
+        required: true,
+    },
+    product_id:{
         type: Schema.Types.ObjectId,
         required: true,
+    },
+    product_price:{
+        type: String,
+        required: true,
+    },
+    _sale: { // _sale object contains { onSale for true or false sale, and price if true onSale }
+        onSale: {
+            type: Boolean,
+            default: false,
+        },
+        price: {
+            type: Number,
+            default: 0,
+        },
     },
     quantity: {
         type: Number,
     },
-    price:{
+    featureImage: { // Link for Feature Image
         type: String,
     },
     created_at: { // Date in which the document is created

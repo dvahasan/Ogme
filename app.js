@@ -16,7 +16,6 @@
  * */
 
 
-
 /** 1-  Required Packages
  *      1-  Express JS.
  *      2-  Path.
@@ -151,12 +150,14 @@ passport.deserializeUser(function (obj, done) {
 /** ./APP GLOBALS */
 
 /** 13- API Routes */
-const {category, product, file, user} = require("./routes/routes");
+const {category, product, file, user, order, cart} = require("./routes/routes");
 
 /** 1-  */ app.use('/category', category);
 /** 2-  */ app.use('/product', product);
 /** 3-  */ app.use('/file', file);
 /** 4-  */ app.use('/user', user);
+/** 5-  */ app.use('/order', order);
+/** 6-  */ app.use('/cart', cart);
 
 /** Main Route and Redirection to Home Route */
 app.get('/', (req, res) => {

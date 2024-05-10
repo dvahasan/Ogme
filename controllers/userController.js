@@ -13,6 +13,8 @@ const {_all,
 
 /** Required Models */
 const User = require('../models/user');
+const Order = require('../models/order');
+const Cart = require('../models/cart');
 /** ./Required Models */
 
 
@@ -75,11 +77,11 @@ module.exports.add = async (req, res) => {
 module.exports.sign = (req, res) => {
     return res.render('signIn');
 };
-module.exports.login = (req, res, next) => {
+module.exports.login =  (req, res, next) => {
     let r = {};
     passport.authenticate('user',
         {failureFlash: 'Invalid username or password.'},
-        function (err, user, info) {
+         function (err, user, info) {
             if (err) {
                 return next(err);
             }
@@ -90,16 +92,25 @@ module.exports.login = (req, res, next) => {
                 };
                 return res.send(r);
             }
-            req.logIn(user, function (err) {
+            req.logIn(user, async function (err) {
                 if (err) {
                     return next(err);
                 }
 
+                const cart = await _all(User, {user: req.user._id});
+
                 let expireDate = new Date();
                 expireDate.setDate(expireDate.getDate() + parseInt(process.env.DAYS_FOR_COOKIE_TO_EXPIRE));
 
-                res.cookie("user", JSON.stringify(req.user._id), {
-                    //secure: process.env.NODE_ENV !== "production",
+                res.cookie("user", req.user._id, {
+                    secure: true,
+                    httpOnly: true,
+                    signed: true,
+                    expires: expireDate,
+                    priority: 'High'
+                });
+
+                res.cookie("cart", cart, {
                     secure: true,
                     httpOnly: true,
                     signed: true,
@@ -121,6 +132,8 @@ module.exports.login = (req, res, next) => {
 /** Logout User */
 module.exports.logout = (req, res) => {
     res.clearCookie("user");
+    res.clearCookie("cart");
+    delete req.cart;
     req.logout(function (err) {
         if (err) { return next(err);}
         let r = {
@@ -133,5 +146,31 @@ module.exports.logout = (req, res) => {
     //res.redirect("/home");
 }
 /** ./Logout User */
+
+/** Profile */
+module.exports.userProfile = async(req, res) =>{
+
+    const data = {
+        _id: req.signedCookies.user,
+        fullName: req.user.fullName,
+        email: req.user.email,
+        username: req.user.username,
+        publish: req.user.publish,
+        created_at: req.user.created_at,
+        deleted_at: req.user.deleted_at,
+    };
+    const order = await _all(Order, {user: data._id});
+    const cart = await _all(Cart, {user: data._id});
+
+
+    return res.send({
+        status: 200,
+        message: "you are signed In.",
+        data,
+        order,
+        cart,
+    });
+}
+/** ./Profile */
 
 /** ./Data APIs With Axios And End-Points */
