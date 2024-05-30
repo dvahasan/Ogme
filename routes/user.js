@@ -24,11 +24,12 @@ router.get('/logout', user.logout);
 
 router.route('/profile')
     .get(userAuth, user.userProfile);
-/*router.route("/:id")
+
+router.route("/:id")
     .get()
     .post(user.update)
-    .put(user.publish)
+    /*.put(user.publish)
     .patch(user.trash)
-    .delete(user.delete);*/
+    .delete(user.delete)*/;
 
 module.exports = router;

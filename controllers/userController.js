@@ -173,4 +173,12 @@ module.exports.userProfile = async(req, res) =>{
 }
 /** ./Profile */
 
+/** Update Document */
+module.exports.update = async (req, res) => {
+    const body = req.body, {id} = req.params;
+    const response = await _update(User, id, body);
+    return res.send(response);
+}
+/** ./Update Document */
+
 /** ./Data APIs With Axios And End-Points */
