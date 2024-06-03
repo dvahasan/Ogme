@@ -159,6 +159,7 @@ module.exports.userProfile = async(req, res) =>{
         created_at: req.user.created_at,
         deleted_at: req.user.deleted_at,
     };
+    //console.log(data);
     const order = await _all(Order, {user: data._id});
     const cart = await _all(Cart, {user: data._id});
 
