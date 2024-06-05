@@ -150,7 +150,7 @@ passport.deserializeUser(function (obj, done) {
 /** ./APP GLOBALS */
 
 /** 13- API Routes */
-const {category, product, file, user, order, cart} = require("./routes/routes");
+const {category, product, file, user, order, cart, mail} = require("./routes/routes");
 
 /** 1-  */ app.use('/category', category);
 /** 2-  */ app.use('/product', product);
@@ -158,6 +158,7 @@ const {category, product, file, user, order, cart} = require("./routes/routes");
 /** 4-  */ app.use('/user', user);
 /** 5-  */ app.use('/order', order);
 /** 6-  */ app.use('/cart', cart);
+/** 7-  */ app.use('/mail', mail);
 
 /** Main Route and Redirection to Home Route */
 app.get('/', (req, res) => {
