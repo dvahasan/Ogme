@@ -155,6 +155,7 @@ module.exports.userProfile = async(req, res) =>{
         fullName: req.user.fullName,
         email: req.user.email,
         username: req.user.username,
+        mobile : req.user.mobile,
         publish: req.user.publish,
         created_at: req.user.created_at,
         deleted_at: req.user.deleted_at,

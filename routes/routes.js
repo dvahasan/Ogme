@@ -23,4 +23,8 @@ module.exports.order = require("./order");
 module.exports.cart = require("./cart");
 /** ./File Routes */
 
+/** 7- Send Mails */
+module.exports.mail = require("./mail");
+/** ./Send Mails */
+
 
