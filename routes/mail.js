@@ -12,7 +12,10 @@ const mail = require('../controllers/mailController');
 
 router.route("/")
     .get(mail.mailForm)
-    .post(mail.sendMail);  // View all Products
+    .post(mail.askUs);  // View all Products
+
+router.route('/custom')
+    .post(mail.sendingEmail)
 
 
 

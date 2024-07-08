@@ -17,16 +17,18 @@
 
 
 /** 1-  Required Packages
- *      1-  Express JS.
- *      2-  Path.
- *      3-  EJS-MATE.
- *      4-  Mongoose.
- *      5-  Session.
- *      6-  Connect Flash.
- *      7-  Passport JS.
- *      8-  Method Override.
- *      9-  Body Parser.
- *      10- cookieParser.
+ *      1-  express.
+ *      2-  path.
+ *      3-  ejs-mate.
+ *      4-  mongoose.
+ *      5-  express-session.
+ *      6-  connect-flash.
+ *      7-  passport.
+ *      8-  passport-local.
+ *      9-  method-override.
+ *      10- body-parser.
+ *      11- cookie-parser.
+ *      12- connect-mongo
  *
  * */
 
@@ -56,20 +58,27 @@ const flash = require('connect-flash');
 
 /** 7-  Passport JS For Authentication And Authorization */
 const passport = require('passport');
-const LocalStrategy = require('passport-local');
 /** ./Passport JS For Authentication And Authorization */
 
-/** 8-  Method Override */
+/** 8- Passport Local Strategy */
+const LocalStrategy = require('passport-local');
+/** ./Passport Local Strategy */
+
+/** 9-  Method Override */
 const methodOverride = require('method-override');
 /** ./Method Override */
 
-/** 9-  Body Parses */
+/** 10-  Body Parses */
 const bodyParser = require('body-parser');
 /** ./Body Parses */
 
-/** 10- Cookie Parser */
+/** 11- Cookie Parser */
 const cookieParser = require('cookie-parser')
 /** ./Cookie Parser */
+
+/** 12- MongoDB Sessions Database Storing */
+const MongoSessionStore = require('connect-mongo')
+/** ./MongoDB Sessions Database Storing */
 
 /** ./Required Packages */
 
@@ -99,16 +108,25 @@ const app = express();
 /** ./Instantiate Express App */
 
 /** 6-  Sessions And Cookies */
+/** Sessions DB Store */
+const store = new MongoSessionStore({
+    mongoUrl: process.env.DB_LINK,
+    secret: process.env.SESSION_SECRET,
+    touchAfter: 3600000 * 24,
+});
+/** ./Sessions DB Store */
+
 /** Sessions Configuration */
 app.use(session({
+    store,
     secret: process.env.SESSION_SECRET,
-    resave: false,
+    resave: true,
     saveUninitialized: true,
-    cookie: {maxAge: 600000}
+    cookie: {maxAge: 3600000 * 24 * process.env.DAYS_FOR_COOKIE_TO_EXPIRE,},
 }));
 /** ./Sessions Configuration */
 /** Cookies Configuration */
-app.use(cookieParser("thisIsASecret"))
+app.use(cookieParser(process.env.COOKIE_PARSER_SECRET))
 /** ./Cookies Configuration */
 /** ./Sessions And Cookies */
 
@@ -150,6 +168,19 @@ passport.deserializeUser(function (obj, done) {
 /** ./APP GLOBALS */
 
 /** 13- API Routes */
+
+
+/** Testing For any Route */
+app.use("*", (req, res, next) => {
+    //console.log(req.headers)
+    //if (req.session.passport)
+        //console.log(req);
+    //console.log(req.session.passport.user);
+    //console.log(req.session.passport);
+    return next();
+});
+/** ./Testing For any Route */
+
 const {category, product, file, user, order, cart, mail} = require("./routes/routes");
 
 /** 1-  */ app.use('/category', category);
@@ -165,6 +196,7 @@ app.get('/', (req, res) => {
     res.send("Hello OGME");
 });
 /** ./Main Route and Redirection to Home Route */
+
 /** ./API Routes */
 
 /** 14- APP Port */

@@ -22,6 +22,8 @@ router.get('/login', user.sign);
 router.post('/login', user.login);
 router.get('/logout', user.logout);
 
+router.get('/verify/:id/:token', user.verify)
+
 router.route('/profile')
     .get(userAuth, user.userProfile);
 
