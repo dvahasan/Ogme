@@ -1,10 +1,12 @@
 /** Required Functions */
-const {_all,
+const {
+    _all,
     _add,
     _update,
     _publish,
     _trash,
-    _delete} = require('../lib/functions');
+    _delete
+} = require('../lib/functions');
 /** ./Required Functions */
 
 /** Required Models */
@@ -17,15 +19,14 @@ const Cart = require('../models/cart');
 /** View All Orders */
 module.exports.all = async (req, res) => {
     const filter = req.query;
-    const isFilter = filter._f, skip = filter._s, limit = filter._l;
-    delete filter._f;
+    const skip = filter._s, limit = filter._l;
     delete filter._s;
     delete filter._l;
     filter['user'] = req.user._id;
 
-    const response = isFilter ?
+    const response = Object.keys(req.query).length > 0 ?
         await _all(Order, filter, {skip, limit}) :
-        await _all(Order,null, {skip, limit});
+        await _all(Order, null, {skip, limit});
     return res.send(response);
 }
 /** ./View All Orders */
@@ -34,18 +35,38 @@ module.exports.all = async (req, res) => {
 module.exports.add = async (req, res) => {
     let r = {};
     try {
-        if (req.body.user === req.user._id){
+        if (req.body.user === req.user._id) {
             const body = req.body;
-            const data = await _add(Order, body);
-            r = {
-                status: 200,
-                message: "Successfully Added",
-                data,
-            };
+            // Check if the product is already in the cart
+            const existingCartItem = await Cart.findOne({
+                user: req.body.user,
+                product_id: req.body.product_id
+            });
+
+            if (existingCartItem) {
+                // If the product is already in the cart, update the quantity
+                const updatedCartItem = await Cart.findByIdAndUpdate(
+                    existingCartItem._id,
+                    {$inc: {quantity: req.body.quantity}},
+                    {new: true}
+                );
+                r = {
+                    status: 200,
+                    message: "Cart item updated",
+                    data: updatedCartItem
+                };
+            } else {
+                const data = await _add(Order, body);
+                r = {
+                    status: 200,
+                    message: "Successfully Added",
+                    data,
+                };
+            }
         } else {
             throw new DOMException("Unauthorized, You must sign in first!");
         }
-    }catch (e) {
+    } catch (e) {
         r = {
             status: 401,
             message: e.message,

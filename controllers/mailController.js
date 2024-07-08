@@ -10,11 +10,11 @@ const transporter = nodemailer.createTransport({
 });
 
 module.exports.mailForm = (req, res) => {
-    return res.render("sendEmail");
+    return res.render("emailForm");
 }
 
 
-module.exports.sendMail =  async(req, res) => {
+module.exports.askUs =  async(req, res) => {
 
     const body = req.body;
     let r = [];
@@ -32,7 +32,7 @@ module.exports.sendMail =  async(req, res) => {
     };
     //return res.render('email');
     const path = require('node:path');
-    const ogmeEmail = (path.resolve('./views/email.ejs'));
+    const ogmeEmail = (path.resolve('./views/ogmeEmail.ejs'));
     const customerEmail = (path.resolve('./views/customerEmail.ejs'));
     //console.log(ogmeEmail);
 
@@ -92,4 +92,61 @@ module.exports.sendMail =  async(req, res) => {
 
 
 
+}
+
+module.exports.sendingEmail = async(req, res) => {
+
+    const data = req.body;
+    let r = [];
+
+    /** Email Template Data */
+/*    const data = {
+        sender: body.sender,
+        receiver: body.receiver,
+        senderEmail: body.senderEmail,
+        receiverEmail: body.receiverEmail,
+        subject: body.subject,
+        message: body.message,
+    }*/
+    /** ./Email Template Data */
+
+    /** Email Template Path */
+    //console.log(req.body)
+    //console.log(data.template)
+    const path = require('node:path');
+    const emailTemplatePath = (path.resolve(data.template));
+
+    const ejs = require('ejs');
+    const emailTemplate = await ejs.renderFile(emailTemplatePath, {
+        data
+    });
+    /** ./Email Template Path */
+
+    /** Email Options */
+    const emailOpt = {
+        from: `${data.sender} - ${data.senderEmail}`,
+        to: data.receiverEmail,
+        subject: data.subject,
+        html: emailTemplate,
+    };
+    /** ./Email Options */
+
+    /** Sending Email */
+    await transporter.sendMail(emailOpt, function (error, info) {
+        if (error) {
+            //return res.redirect("/senior/profile")
+            return res.send(error)
+            //request_feedback = "Profile created successfully, but their is an error sending email!";
+            //throw "Profile created successfully, but their is an error sending email!";
+        } else {
+            //return res.redirect("/senior/profile")
+            //console.log(info)
+            return  res.send({
+                status: 200,
+                message: "Email sent successfully",
+            })
+            //request_feedback = "/senior/profile2";
+        }
+    });
+    /** ./Sending Email */
 }

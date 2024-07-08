@@ -19,14 +19,13 @@ const Cart = require('../models/cart');
 /** View All Orders */
 module.exports.all = async (req, res) => {
     const filter = req.query;
-    const isFilter = filter._f, skip = filter._s, limit = filter._l;
-    delete filter._f;
+    const skip = filter._s, limit = filter._l;
     delete filter._s;
     delete filter._l;
 
     filter['user'] = req.user._id;
 
-    const response = isFilter ?
+    const response = Object.keys(req.query).length > 0 ?
         await _all(Cart, filter, {skip, limit}) :
         await _all(Cart, null, {skip, limit});
     return res.send(response);

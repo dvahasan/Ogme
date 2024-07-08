@@ -2,7 +2,6 @@
 
 //const express = require('express');
 //const app = express();
-const axios = require('axios');
 //const flash = require('connect-flash');
 /** ./Required Libraries */
 
@@ -23,12 +22,11 @@ const Product = require('../models/product');
 /** View All Products */
 module.exports.all = async (req, res) => {
     const filter = req.query;
-    const isFilter = filter._f, skip = filter._s, limit = filter._l;
-    delete filter._f;
+    const skip = filter._s, limit = filter._l;
     delete filter._s;
     delete filter._l;
 
-    const response = isFilter ?
+    const response = Object.keys(req.query).length > 0 ?
         await _all(Product, filter, {skip, limit}) :
         await _all(Product,null, {skip, limit});
     return res.send(response);

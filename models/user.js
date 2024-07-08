@@ -23,6 +23,10 @@ const UserSchema = new Schema({
         trim: true,
         unique: true
     },
+    verified:{
+        type: Boolean,
+        default: false,
+    },
     mobile: {
         type: String,
         trim: true,
