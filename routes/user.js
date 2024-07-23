@@ -22,6 +22,9 @@ router.get('/login', user.sign);
 router.post('/login', user.login);
 router.get('/logout', user.logout);
 
+router.post('/reset-password/', user.sendPasswordResetToken)
+router.get('/reset-password/:id/:token/', user.verifyPasswordResetToken)
+
 router.get('/verify/:id/:token', user.verify)
 
 router.route('/profile')

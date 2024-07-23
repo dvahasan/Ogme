@@ -1,6 +1,7 @@
 /** Required Libraries */
 const passport = require('passport');
 const axios = require('axios');
+const jwt = require('jsonwebtoken');
 /** ./Required Libraries */
 
 /** Required Middleware */
@@ -38,28 +39,6 @@ module.exports.all = async (req, res) => {
     const response = Object.keys(req.query).length > 0 ?
         await _all(User, filter, {skip, limit}) :
         await _all(User, null, {skip, limit});
-
-
-    const TokenData = {
-        "_id": "665c7cae8efce76173b73d80",
-        "fullName": "Test User",
-        "email": "test@gmail.com",
-        "username": "test@gmail.com",
-        "mobile": "01012345678",
-        "publish": true,
-        "created_at": "2024-06-02T14:07:42.469Z",
-        "deleted_at": null
-    }
-
-    const token = _JWTToken(TokenData, '15m')
-
-
-    const TokenVerify = _JWTVerify(token)
-
-    console.log(token)
-    console.log(TokenVerify)
-
-
     return res.send(response);
 }
 /** ./View All Products */
@@ -99,7 +78,7 @@ module.exports.add = async (req, res, next) => {
                     message: '',
                     url: `${process.env.URL}user/verify/${add_user._id}/${emailVerifyToken}`,
                     template: './views/newUserEmail.ejs',
-                },{
+                }, {
                     headers: {
                         'Content-Type': 'application/x-www-form-urlencoded'
                     }
@@ -157,7 +136,6 @@ module.exports.add = async (req, res, next) => {
     }
 
 
-
 }
 /** ./Add new Product */
 
@@ -204,21 +182,21 @@ module.exports.login = (req, res, next) => {
 
                 let expireDate = new Date();
                 expireDate.setDate(expireDate.getDate() + parseInt(process.env.DAYS_FOR_COOKIE_TO_EXPIRE));
-/*                res.cookie("user", req.user._id, {
-                    secure: true,
-                    httpOnly: true,
-                    signed: true,
-                    expires: expireDate,
-                    priority: 'High'
-                });*/
+                /*                res.cookie("user", req.user._id, {
+                                    secure: true,
+                                    httpOnly: true,
+                                    signed: true,
+                                    expires: expireDate,
+                                    priority: 'High'
+                                });*/
 
-/*                res.cookie("user", req.sessionID, {
-                    secure: true,
-                    httpOnly: true,
-                    signed: true,
-                    expires: expireDate,
-                    priority: 'High'
-                });*/
+                /*                res.cookie("user", req.sessionID, {
+                                    secure: true,
+                                    httpOnly: true,
+                                    signed: true,
+                                    expires: expireDate,
+                                    priority: 'High'
+                                });*/
 
                 res.cookie("cart", cart, {
                     secure: true,
@@ -262,7 +240,6 @@ module.exports.logout = (req, res) => {
 
 /** Profile */
 module.exports.userProfile = async (req, res) => {
-
     try {
         //console.log(req.session)
         if (req.session.passport.user) {
@@ -315,6 +292,103 @@ module.exports.userProfile = async (req, res) => {
 }
 /** ./Profile */
 
+/** Password Reset Procedures */
+/** Sending Reset Password Token Via Email */
+module.exports.sendPasswordResetToken = async (req, res) => {
+    const {email} = req.body;
+    let user = await _all(User, {email}), r = {};
+    try {
+        if (user.response.count > 0) {
+            user = user.response.data[0];
+
+            const protocol = req.protocol,
+                host = req.hostname,
+                port = process.env.NODE_ENV === 'dev' ? `:${process.env.PORT}` : '',
+                id = user._id;
+
+            const secret = process.env.JWTSECRET + id,
+                payload = {
+                    email,
+                    id,
+
+                }
+            const token = jwt.sign(payload, secret, {expiresIn: process.env.JWTRESETEXP})
+
+            const resetLink = `${protocol}://${host}${port}/user/reset-password/${id}/${token}`
+
+
+            const emailData = {
+                sender: 'Ogme Store',
+                senderEmail: process.env.MAILEMAIL,
+                receiver: user.fullName,
+                receiverEmail: user.email,
+                subject: 'Password Reset',
+                message: `Following is your request link to reset password, please note that your request link expires after only ${process.env.JWTEMAILEXPMESSAGE}!`,
+                link: resetLink,
+                template: './views/resetPasswordEmail.ejs'
+            };
+
+            axios.defaults.baseURL = axiosURL(req.protocol, req.hostname);
+            await axios.post(`mail/custom`, emailData, {
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                }
+            })
+                .then((response) => {
+                    r = {
+                        status: 200,
+                        message: "Password reset Email sent.",
+                    };
+                })
+                .catch((e) => {
+                    r = {
+                        status: 500,
+                        message: e.message,
+                    }
+                })
+            return res.send(r)
+        }
+    } catch (e) {
+        return {
+            status: 500,
+            message: e.message,
+        }
+    }
+}
+/** ./Sending Reset Password Token Via Email */
+
+/** Verifing Reset Password Token From Email */
+module.exports.verifyPasswordResetToken = async (req, res) => {
+    const {id, token} = req.params;
+    try {
+        const secret = process.env.JWTSECRET + id;
+        const isValidToken = await jwt.verify(token, secret);
+        //return res.send(isValidToken)
+        if (isValidToken){
+         return res.send({
+             status: 200,
+             message:'Token is valid',
+             data:{
+                 email: isValidToken.email,
+                 id: isValidToken.id,
+             },
+         });
+        }else{
+            throw new DOMException("Link expired");
+        }
+
+    }catch (e) {
+        //return false;
+        return res.send({
+            status: 412,
+            token: false,
+            message: 'Link expired',
+        })
+    }
+}
+/** ./Verifing Reset Password Token From Email */
+/** ./Password Reset Procedures */
+
 /** Update Document */
 module.exports.update = async (req, res) => {
     const body = req.body, {id} = req.params;
@@ -329,21 +403,21 @@ module.exports.verify = async (req, res) => {
     try {
         const verifyToken = _JWTVerify(req.params.token)
 
-        if (verifyToken){
+        if (verifyToken) {
             const user = await _update(User, req.params.id, {verified: true})
-            if (user){
+            if (user) {
                 r = {
                     status: 200,
                     message: 'User Verified Successfully!',
                 }
-            }else{
+            } else {
                 throw new DOMException("Can not update user Please try again later!");
             }
-        }else{
+        } else {
             throw new DOMException("Invalid Token Or URL!");
         }
 
-    }catch (e) {
+    } catch (e) {
         r = {
             status: 500,
             message: e.message,

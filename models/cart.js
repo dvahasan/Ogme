@@ -39,6 +39,9 @@ const CartSchema = new Schema({
     featureImage: { // Link for Feature Image
         type: String,
     },
+    category:{
+        type: String,
+    },
     created_at: { // Date in which the document is created
         type: Date,
         default: Date.now

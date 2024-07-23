@@ -37,8 +37,8 @@ module.exports.all = async (req, res) => {
 
 /** Add new Category */
 module.exports.add = async (req, res) => {
-    const {title} = req.body;
-    const response = await _add(Category, {title})
+    const {title, bannerURL} = req.body;
+    const response = await _add(Category, {title, bannerURL})
     return res.send(response);
 }
 /** ./Add new Category */
