@@ -14,7 +14,8 @@ const FileSchema = new Schema({
     },
     fileName: { // File Name
         type: String,
-        required: true
+        required: true,
+        unique: true,
     },
     fileSize: { // File Size
         type: Number,

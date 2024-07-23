@@ -14,6 +14,10 @@ const CategorySchema = new Schema({
         trim: true,
         unique: true,
     },
+    bannerURL: {
+        type: String,
+        required: true,
+    },
     created_at: { // Date in which the document is created
         type: Date,
         default: Date.now
