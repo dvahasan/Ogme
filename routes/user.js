@@ -23,6 +23,8 @@ router.post('/login', user.login);
 router.get('/logout', user.logout);
 
 router.post('/reset-password/', user.sendPasswordResetToken)
+router.post('/update-password/', user.passwordUpdate)
+
 router.get('/reset-password/:id/:token/', user.verifyPasswordResetToken)
 
 router.get('/verify/:id/:token', user.verify)
