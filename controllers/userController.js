@@ -61,7 +61,6 @@ module.exports.add = async (req, res, next) => {
             if (add_user) {
                 req.body.username = data.email;
                 req.body.password = data.password;
-                console.log(add_user)
 
                 const emailVerifyToken = _JWTToken({email: add_user.email, id: add_user._id,}, '10 years');
 
@@ -84,7 +83,7 @@ module.exports.add = async (req, res, next) => {
                     }
                 })
                     .then((response) => {
-                        console.log('Email Sent From New User')
+
 
                     })
                     .catch((err) => {
@@ -296,63 +295,69 @@ module.exports.userProfile = async (req, res) => {
 /** Sending Reset Password Token Via Email */
 module.exports.sendPasswordResetToken = async (req, res) => {
     const {email} = req.body;
-    let user = await _all(User, {email}), r = {};
+    let r = {};
     try {
-        if (user.response.count > 0) {
-            user = user.response.data[0];
+        let user = await _all(User, {email});
 
-            const protocol = req.protocol,
-                host = req.hostname,
-                port = process.env.NODE_ENV === 'dev' ? `:${process.env.PORT}` : '',
-                id = user._id;
+        if (user.status === 200) {
+            if (user.response.count > 0) {
+                user = user.response.data[0];
 
-            const secret = process.env.JWTSECRET + id,
-                payload = {
-                    email,
-                    id,
+                const protocol = req.protocol,
+                    host = req.hostname,
+                    port = process.env.NODE_ENV === 'dev' ? `:${process.env.PORT}` : '',
+                    id = user._id;
 
-                }
-            const token = jwt.sign(payload, secret, {expiresIn: process.env.JWTRESETEXP})
+                const secret = process.env.JWTSECRET + id,
+                    payload = {
+                        email,
+                        id,
 
-            const resetLink = `${protocol}://${host}${port}/user/reset-password/${id}/${token}`
+                    }
+                const token = jwt.sign(payload, secret, {expiresIn: process.env.JWTRESETEXP})
+
+                const resetLink = `${protocol}://${host}${port}/user/reset-password/${id}/${token}`
 
 
-            const emailData = {
-                sender: 'Ogme Store',
-                senderEmail: process.env.MAILEMAIL,
-                receiver: user.fullName,
-                receiverEmail: user.email,
-                subject: 'Password Reset',
-                message: `Following is your request link to reset password, please note that your request link expires after only ${process.env.JWTEMAILEXPMESSAGE}!`,
-                link: resetLink,
-                template: './views/resetPasswordEmail.ejs'
-            };
+                const emailData = {
+                    sender: 'Ogme Store',
+                    senderEmail: process.env.MAILEMAIL,
+                    receiver: user.fullName,
+                    receiverEmail: user.email,
+                    subject: 'Password Reset',
+                    message: `Following is your request link to reset password, please note that your request link expires after only ${process.env.JWTEMAILEXPMESSAGE}!`,
+                    link: resetLink,
+                    template: './views/resetPasswordEmail.ejs'
+                };
 
-            axios.defaults.baseURL = axiosURL(req.protocol, req.hostname);
-            await axios.post(`mail/custom`, emailData, {
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded'
-                }
-            })
-                .then((response) => {
-                    r = {
-                        status: 200,
-                        message: "Password reset Email sent.",
-                    };
-                })
-                .catch((e) => {
-                    r = {
-                        status: 500,
-                        message: e.message,
+                axios.defaults.baseURL = axiosURL(req.protocol, req.hostname);
+                await axios.post(`mail/custom`, emailData, {
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
                     }
                 })
-            return res.send(r)
+                    .then((response) => {
+                        r = {
+                            status: 200,
+                            message: "Password reset Email sent.",
+                        };
+                    })
+                    .catch((e) => {
+                        r = {
+                            status: 500,
+                            message: e.message,
+                        }
+                    })
+                return res.send(r)
+            }
+        } else {
+            throw new DOMException("User not found!");
         }
     } catch (e) {
-        return {
+        return res.send({
             status: 500,
             message: e.message,
-        }
+        });
     }
 }
 /** ./Sending Reset Password Token Via Email */
@@ -364,20 +369,21 @@ module.exports.verifyPasswordResetToken = async (req, res) => {
         const secret = process.env.JWTSECRET + id;
         const isValidToken = await jwt.verify(token, secret);
         //return res.send(isValidToken)
-        if (isValidToken){
-         return res.send({
-             status: 200,
-             message:'Token is valid',
-             data:{
-                 email: isValidToken.email,
-                 id: isValidToken.id,
-             },
-         });
-        }else{
+        if (isValidToken) {
+            return res.send({
+                status: 200,
+                message: 'Token is valid',
+                data: {
+                    email: isValidToken.email,
+                    id: isValidToken.id,
+                    token
+                },
+            });
+        } else {
             throw new DOMException("Link expired");
         }
 
-    }catch (e) {
+    } catch (e) {
         //return false;
         return res.send({
             status: 412,
@@ -388,6 +394,46 @@ module.exports.verifyPasswordResetToken = async (req, res) => {
 }
 /** ./Verifing Reset Password Token From Email */
 /** ./Password Reset Procedures */
+
+/** Password Update Route */
+module.exports.passwordUpdate = async (req, res) => {
+    const {email, id, token, password} = req.body;
+    let r = {}
+    try {
+        const secret = process.env.JWTSECRET + id;
+        const isValidToken = await jwt.verify(token, secret);
+        if (isValidToken) {
+            const user = await User.findOne({_id: id})
+
+            if (!user) {
+                throw "User not found"
+            } else {
+                user.setPassword(password, (err, user) => {
+                    if (err) {
+                        throw "User found but not authorized to change password!"
+                    } else {
+                        user.save();
+                    }
+                })
+
+                r = {
+                    status: 200,
+                    message: "Password changed"
+                }
+            }
+        } else {
+            throw new DOMException("Link expired");
+        }
+        //return res.send(isValidToken);
+    } catch (e) {
+        r = {
+            status: 500,
+            message: e.message,
+        }
+    }
+    return res.send(r);
+}
+/** ./Password Update Route */
 
 /** Update Document */
 module.exports.update = async (req, res) => {
